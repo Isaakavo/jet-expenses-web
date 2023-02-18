@@ -1,6 +1,8 @@
 import { AuthenticationResult } from 'models/AuthenticationResult';
-import React, { Dispatch, SetStateAction } from 'react';
+import React from 'react';
+import { Route, Routes } from 'react-router-dom';
 import './App.css';
+import { ExpensesHome } from './Expenses/expenses-home';
 import { Login } from './Login';
 
 export type InitialVal = {
@@ -24,7 +26,10 @@ export const App = () => {
         setAuthenticationState,
       }}
     >
-      <Login />
+      <Routes>
+        <Route path='/' element={<Login />}/>
+        <Route path='expenses' element={<ExpensesHome />} />
+      </Routes>
     </LoginContext.Provider>
   );
 };

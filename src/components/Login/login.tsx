@@ -1,9 +1,11 @@
-import React from 'react';
-import { Card, Button, Col, Typography, Input, Row } from 'antd';
-import './login.css';
+import { Button, Card, Col, Input, Row, Typography } from 'antd';
 import axios from 'axios';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AuthenticationResult } from '../../models/AuthenticationResult';
 import { LoginContext } from '../App';
+import '../shared/styles/shared.css';
+import './login.css';
 
 const { Title } = Typography;
 
@@ -16,6 +18,7 @@ export const Login: React.FC = () => {
     password: '',
   });
   const { setAuthenticationState } = React.useContext(LoginContext);
+  const navigate = useNavigate();
 
   const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLoginState({
@@ -48,6 +51,8 @@ export const Login: React.FC = () => {
       resp.data.AuthenticationResult
     );
     setAuthenticationState(authenticationResult);
+    localStorage.setItem("loginToken", authenticationResult.AccessToken)
+    navigate("expenses");
   };
 
   return (

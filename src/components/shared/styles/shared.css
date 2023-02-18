@@ -1,0 +1,32 @@
+.main-container {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  justify-content: center;
+  width: 70%;
+  height: 70%;
+  left: 50%;
+  top: 50%;
+  -webkit-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+}
+
+@media screen and (max-width: 1224px) {
+  .main-container {
+    width: 100%;
+    padding-top: 30px;
+  }
+}
+
+.layout-content {
+  margin-top: 30px;
+  padding: 0 50px;
+  height: 100%;
+}
+
+@media screen and (max-width: 1224px) {
+  .layout-content{
+    width: 100%;
+    padding: 0;
+  }
+}
