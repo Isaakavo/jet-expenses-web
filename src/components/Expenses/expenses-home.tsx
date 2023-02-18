@@ -1,8 +1,9 @@
 import { Card, Layout, List, Table, Tag } from 'antd';
-import { Content } from 'antd/es/layout/layout';
+import { Content, Header } from 'antd/es/layout/layout';
 import { ColumnsType } from 'antd/es/table';
 import axios from 'axios';
 import { LoginContext } from 'components/App';
+import { NavBar } from 'components/shared/components/navbar';
 import {
   ExpenseItem,
   ExpenseResponse,
@@ -70,6 +71,9 @@ export const ExpensesHome = () => {
 
   return (
     <Layout>
+      <Header style={{background: 'white'}}>
+        <NavBar />
+      </Header>
       <Content className='layout-content'>
         {!isTabletOrMobile && (
           <Table columns={columns} dataSource={expenses?.data} />
