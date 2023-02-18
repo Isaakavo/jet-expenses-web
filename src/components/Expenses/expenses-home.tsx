@@ -9,6 +9,7 @@ import {
   ExpenseResponse,
   Tag as TagExpense,
 } from 'models/ExpenseResponse';
+import moment from 'moment';
 import React from 'react';
 import { useMediaQuery } from 'react-responsive';
 import '../shared/styles/shared.css';
@@ -21,7 +22,7 @@ export const ExpensesHome = () => {
   const tagsComponent = (tag: [TagExpense]) =>
     tag.map((ta) => {
       return (
-        <Tag color={'geekblue'} key={ta.id}>
+        <Tag color={'geekblue'} key={ta.id} style={{marginBottom: '4px'}}>
           {ta.tagName.toUpperCase()}
         </Tag>
       );
@@ -61,7 +62,7 @@ export const ExpensesHome = () => {
         },
       };
       const resp = await axios.get(
-        'http://localhost:8080/api/expenses',
+        'http://192.168.100.5:8080/api/expenses',
         axiosConf
       );
       setExpeses(resp.data.body);
@@ -92,10 +93,9 @@ export const ExpensesHome = () => {
             dataSource={expenses?.data}
             renderItem={(item) => (
               <List.Item>
-                <Card title={item.concept}>
+                <Card title={item.concept} extra={moment(item.dateAdded).format('DD MMMM YYYY')}>
                   <div>
-                    <div>Total Gastado: {item.total}</div>
-                    <div>Fecha: {item.dateAdded}</div>
+                    <div style={{marginBottom: '8px'}}>Total Gastado <span style={{fontWeight: 700}}>${item.total}</span></div>
                     {tagsComponent(item.tag)}
                   </div>
                 </Card>

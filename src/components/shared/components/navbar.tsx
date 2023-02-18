@@ -21,6 +21,7 @@ export const NavBar = ()=> {
       key: '3',
     },
   ];
+  //TODO change this dropdown for a full nav bar when on desktop
   return (
     <div style={{display: 'flex', justifyContent: 'flex-end', flexWrap: 'wrap'}}>
     <Dropdown menu={{items}} trigger={['click']} overlayStyle={{alignContent: 'left'}}>
