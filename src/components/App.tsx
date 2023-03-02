@@ -4,6 +4,9 @@ import { Route, Routes } from 'react-router-dom';
 import './App.css';
 import { ExpensesHome } from './Expenses/expenses-home';
 import { Login } from './Login';
+import { ApiInstanceProvider } from './shared/ApiInstanceProvider';
+import { httpClientConfig } from './shared/HttpClient';
+import { requestInterceptor } from './shared/interceptos';
 
 export type InitialVal = {
   authenticationState: AuthenticationResult | null;
@@ -26,10 +29,15 @@ export const App = () => {
         setAuthenticationState,
       }}
     >
-      <Routes>
-        <Route path='/' element={<Login />}/>
-        <Route path='expenses' element={<ExpensesHome />} />
-      </Routes>
+      <ApiInstanceProvider
+        config={httpClientConfig}
+        requestInterceptors={[requestInterceptor]}
+      >
+        <Routes>
+          <Route path='/' element={<Login />} />
+          <Route path='expenses' element={<ExpensesHome />} />
+        </Routes>
+      </ApiInstanceProvider>
     </LoginContext.Provider>
   );
 };
