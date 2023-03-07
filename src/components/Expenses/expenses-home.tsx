@@ -1,8 +1,7 @@
-import { Card, Layout, List, Modal, Table, Tag } from 'antd';
+import { Card, Layout, List, Modal, Spin, Table, Tag } from 'antd';
 import { Content, Header } from 'antd/es/layout/layout';
 import { ColumnsType } from 'antd/es/table';
-import axios from 'axios';
-import { LoginContext } from 'components/App';
+import { LoadingScreen } from 'components/shared/components/loading';
 import { NavBar } from 'components/shared/components/navbar';
 import { useApi } from 'hooks/useApi';
 import {
@@ -18,7 +17,7 @@ import '../shared/styles/shared.css';
 export const ExpensesHome = () => {
   const [expenses, setExpeses] = React.useState<ExpenseResponse>();
   const isTabletOrMobile = useMediaQuery({ query: '(max-width: 1224px)' });
-  const { data, error, fetch } = useApi(
+  const { data, error, loading, fetch } = useApi(
     '/api/expenses',
     'get',
     undefined,
@@ -74,8 +73,14 @@ export const ExpensesHome = () => {
     fetch();
   }, []);
 
+  if (loading) {
+    return (
+      <LoadingScreen />
+    )
+  }
+
   // TODO Make a reusable component
-  if (error) {
+  if (error && !loading) {
     return (
       <Modal title='Sesión agotada' open={true}>
         <span>Por tu seguirad favor inicia sesion de nuevo</span>
