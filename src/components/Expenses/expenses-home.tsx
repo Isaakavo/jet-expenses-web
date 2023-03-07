@@ -120,7 +120,7 @@ export const ExpensesHome = () => {
               <List.Item>
                 <Card
                   title={item.concept}
-                  extra={moment(item.dateAdded).format('DD MMMM YYYY')}
+                  extra={item.dateAdded}
                 >
                   <div>
                     <div style={{ marginBottom: '8px' }}>
