@@ -1,5 +1,7 @@
-import { Button, Card, Col, Input, Row, Typography } from 'antd';
-import axios from 'axios';
+import { Button, Card, Col, Form, Input, Row, Typography } from 'antd';
+import { HttpStatusCode } from 'axios';
+import { FormikErrors, useFormik } from 'formik';
+import { useApi } from 'hooks/useApi';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthenticationResult } from '../../models/AuthenticationResult';
@@ -9,54 +11,91 @@ import './login.css';
 
 const { Title } = Typography;
 
-export const Login: React.FC = () => {
-  const [loginState, setLoginState] = React.useState<{
-    email: '';
-    password: '';
-  }>({
-    email: '',
-    password: '',
-  });
-  const { setAuthenticationState } = React.useContext(LoginContext);
-  const navigate = useNavigate();
+interface FormValues {
+  email: string;
+  password: string;
+}
 
-  const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setLoginState({
-      ...loginState,
-      [e.target.name]: e.target.value,
-    });
+const axiosCognitoConf = {
+  headers: {
+    'X-Amz-Target': 'AWSCognitoIdentityProviderService.InitiateAuth',
+    'Content-Type': 'application/x-amz-json-1.1',
+  },
+};
+
+const cognitoUrl = 'https://cognito-idp.us-east-2.amazonaws.com/';
+const validate = (values: FormValues): FormikErrors<FormValues> => {
+  const errors: FormikErrors<FormValues> = {};
+  if (!values.email) {
+    errors.email = 'Required';
+  }
+
+  if (!values.password) {
+    errors.password = 'Required';
+  } else if (values.password.length > 50) {
+    errors.password = 'Must be 50 characters or less';
+  }
+
+  if (!values.email) {
+    errors.email = 'Required';
+  } else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(values.email)) {
+    errors.email = 'Invalid email address';
+  }
+
+  return errors;
+};
+
+export const Login: React.FC = () => {
+  const formik = useFormik<FormValues>({
+    initialValues: {
+      email: '',
+      password: '',
+    },
+    validate,
+    onSubmit: async () => {
+      await fetch();
+    },
+  });
+  const navigate = useNavigate();
+  const { setAuthenticationState } = React.useContext(LoginContext);
+
+  const cognitoData = {
+    AuthParameters: {
+      USERNAME: formik.values.email,
+      PASSWORD: formik.values.password,
+    },
+    AuthFlow: 'USER_PASSWORD_AUTH',
+    ClientId: '25oksgjnl258639r4cvp4nl0v2',
   };
 
-  const onClickHandle = async () => {
-    const axiosConf = {
-      headers: {
-        'X-Amz-Target': 'AWSCognitoIdentityProviderService.InitiateAuth',
-        'Content-Type': 'application/x-amz-json-1.1',
-      },
-    };
-    const data = {
-      AuthParameters: {
-        USERNAME: loginState.email,
-        PASSWORD: loginState.password,
-      },
-      AuthFlow: 'USER_PASSWORD_AUTH',
-      ClientId: '25oksgjnl258639r4cvp4nl0v2',
-    };
-    const resp = await axios.post(
-      'https://cognito-idp.us-east-2.amazonaws.com/',
-      data,
-      axiosConf
-    );
+  const { data, error, loading, fetch } = useApi(
+    cognitoUrl,
+    'post',
+    cognitoData,
+    undefined,
+    axiosCognitoConf.headers
+  );
+
+  if (data && !error && !loading) {
     const authenticationResult = new AuthenticationResult(
-      resp.data.AuthenticationResult
+      data.AuthenticationResult
     );
     setAuthenticationState(authenticationResult);
-    localStorage.setItem("loginToken", authenticationResult.AccessToken)
-    navigate("expenses");
-  };
+    localStorage.setItem('loginToken', authenticationResult.AccessToken);
+    navigate('expenses');
+  }
 
+  if (error && !loading) {
+    if (error.response?.status === HttpStatusCode.BadRequest) {
+      if (error.response.data.message === 'Incorrect username or password.') {
+        formik.errors.password = error.response.data.message;
+      }
+    }
+  }
+
+  //TODO make a component for the error message under the inputs
   return (
-    <section className='main-container'>
+    <Form onFinish={formik.handleSubmit} className='main-container'>
       <Card>
         <Row justify={'center'} align='middle'>
           <Col>
@@ -74,25 +113,31 @@ export const Login: React.FC = () => {
               name='email'
               className='margin-top'
               placeholder='E-mail'
-              value={loginState.email}
-              onChange={handleOnChange}
+              status={formik.errors.email ? 'error' : undefined}
+              value={formik.values.email}
+              onChange={formik.handleChange}
             />
+            {formik.errors.email ? <div>{formik.errors.email}</div> : null}
             <Input.Password
               name='password'
               placeholder='Password'
-              value={loginState.password}
-              onChange={handleOnChange}
+              status={formik.errors.password ? 'error' : undefined}
+              value={formik.values.password}
+              onChange={formik.handleChange}
             />
+            {formik.errors.password ? (
+              <div>{formik.errors.password}</div>
+            ) : null}
           </Col>
         </Row>
         <Row justify={'center'}>
           <Col>
-            <Button size={'large'} onClick={onClickHandle}>
+            <Button htmlType='submit' size={'large'} loading={loading}>
               Iniciar sesión
             </Button>
           </Col>
         </Row>
       </Card>
-    </section>
+    </Form>
   );
 };

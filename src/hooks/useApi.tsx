@@ -1,4 +1,4 @@
-import axios, { RawAxiosRequestHeaders } from "axios";
+import axios, { AxiosError, RawAxiosRequestHeaders } from "axios";
 import { ApiContext } from "components/shared/ApiInstanceProvider";
 import React from "react";
 
@@ -10,7 +10,7 @@ export const useApi = (
   headers?: RawAxiosRequestHeaders
 ) => {
   const [data, setData] = React.useState<any>();
-  const [error, setError] = React.useState('');
+  const [error, setError] = React.useState<AxiosError<{ message:string }> | null>(null);
   const [loading, setLoading] = React.useState(false);
   const contextInstance = React.useContext(ApiContext);
   const instance = React.useMemo(() => {
@@ -21,7 +21,7 @@ export const useApi = (
     controllerRef.current.abort();
   };
 
-  const fetch = async (payload?: object) => {
+  const fetch = async () => {
     try {
       setLoading(true);
       const response = await instance.request({
@@ -34,17 +34,11 @@ export const useApi = (
       });
       setData(response.data);
     } catch (error: any) {
-      setError(error.message);
+      setError(error as AxiosError<{ message:string }>);
     } finally {
       setLoading(false);
     }
   };
-
-  // React.useEffect(() => {
-  //   if (method === 'get') {
-  //     fetch();
-  //   }
-  // }, []);
 
   return { cancel, data, error, loading, fetch };
 };
