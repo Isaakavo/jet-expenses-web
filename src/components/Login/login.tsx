@@ -16,6 +16,10 @@ interface FormValues {
   password: string;
 }
 
+interface FormValuesErrors extends FormValues {
+  incorrectUsernameOrPassword: string;
+}
+
 const axiosCognitoConf = {
   headers: {
     'X-Amz-Target': 'AWSCognitoIdentityProviderService.InitiateAuth',
@@ -24,8 +28,8 @@ const axiosCognitoConf = {
 };
 
 const cognitoUrl = 'https://cognito-idp.us-east-2.amazonaws.com/';
-const validate = (values: FormValues): FormikErrors<FormValues> => {
-  const errors: FormikErrors<FormValues> = {};
+const validate = (values: FormValues): FormikErrors<FormValuesErrors> => {
+  const errors: FormikErrors<FormValuesErrors> = {};
   if (!values.email) {
     errors.email = 'Required';
   }
@@ -46,10 +50,11 @@ const validate = (values: FormValues): FormikErrors<FormValues> => {
 };
 
 export const Login: React.FC = () => {
-  const formik = useFormik<FormValues>({
+  const formik = useFormik<FormValuesErrors>({
     initialValues: {
       email: '',
       password: '',
+      incorrectUsernameOrPassword: '',
     },
     validate,
     onSubmit: async () => {
@@ -88,7 +93,7 @@ export const Login: React.FC = () => {
   if (error && !loading) {
     if (error.response?.status === HttpStatusCode.BadRequest) {
       if (error.response.data.message === 'Incorrect username or password.') {
-        formik.errors.password = error.response.data.message;
+        formik.errors.incorrectUsernameOrPassword = error.response.data.message;
       }
     }
   }
@@ -113,7 +118,11 @@ export const Login: React.FC = () => {
               name='email'
               className='margin-top'
               placeholder='E-mail'
-              status={formik.errors.email ? 'error' : undefined}
+              status={
+                formik.errors.email || formik.errors.incorrectUsernameOrPassword
+                  ? 'error'
+                  : undefined
+              }
               value={formik.values.email}
               onChange={formik.handleChange}
             />
@@ -121,12 +130,20 @@ export const Login: React.FC = () => {
             <Input.Password
               name='password'
               placeholder='Password'
-              status={formik.errors.password ? 'error' : undefined}
+              status={
+                formik.errors.password ||
+                formik.errors.incorrectUsernameOrPassword
+                  ? 'error'
+                  : undefined
+              }
               value={formik.values.password}
               onChange={formik.handleChange}
             />
             {formik.errors.password ? (
               <div>{formik.errors.password}</div>
+            ) : null}
+            {formik.errors.incorrectUsernameOrPassword ? (
+              <div>{formik.errors.incorrectUsernameOrPassword}</div>
             ) : null}
           </Col>
         </Row>
