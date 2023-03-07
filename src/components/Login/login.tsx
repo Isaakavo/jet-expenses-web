@@ -28,7 +28,8 @@ const axiosCognitoConf = {
 };
 
 const cognitoUrl = 'https://cognito-idp.us-east-2.amazonaws.com/';
-const validate = (values: FormValues): FormikErrors<FormValuesErrors> => {
+const incorrectUserNameOrPassword = 'Incorrect username or password.';
+const validate = (values: FormValuesErrors): FormikErrors<FormValuesErrors> => {
   const errors: FormikErrors<FormValuesErrors> = {};
   if (!values.email) {
     errors.email = 'Required';
@@ -38,6 +39,8 @@ const validate = (values: FormValues): FormikErrors<FormValuesErrors> => {
     errors.password = 'Required';
   } else if (values.password.length > 50) {
     errors.password = 'Must be 50 characters or less';
+  } else if (values.password === incorrectUserNameOrPassword) {
+    errors.password = '';
   }
 
   if (!values.email) {
@@ -57,12 +60,14 @@ export const Login: React.FC = () => {
       incorrectUsernameOrPassword: '',
     },
     validate,
-    onSubmit: async () => {
-      await fetch();
-    },
+    onSubmit: () => {},
   });
   const navigate = useNavigate();
   const { setAuthenticationState } = React.useContext(LoginContext);
+
+  const handleOnClick = async () => {
+      await fetch();
+  };
 
   const cognitoData = {
     AuthParameters: {
@@ -92,7 +97,7 @@ export const Login: React.FC = () => {
 
   if (error && !loading) {
     if (error.response?.status === HttpStatusCode.BadRequest) {
-      if (error.response.data.message === 'Incorrect username or password.') {
+      if (error.response.data.message === incorrectUserNameOrPassword) {
         formik.errors.incorrectUsernameOrPassword = error.response.data.message;
       }
     }
@@ -100,7 +105,7 @@ export const Login: React.FC = () => {
 
   //TODO make a component for the error message under the inputs
   return (
-    <Form onFinish={formik.handleSubmit} className='main-container'>
+    <section className='main-container'>
       <Card>
         <Row justify={'center'} align='middle'>
           <Col>
@@ -130,12 +135,7 @@ export const Login: React.FC = () => {
             <Input.Password
               name='password'
               placeholder='Password'
-              status={
-                formik.errors.password ||
-                formik.errors.incorrectUsernameOrPassword
-                  ? 'error'
-                  : undefined
-              }
+              status={formik.errors.password || formik.errors.incorrectUsernameOrPassword ? 'error' : undefined}
               value={formik.values.password}
               onChange={formik.handleChange}
             />
@@ -149,12 +149,17 @@ export const Login: React.FC = () => {
         </Row>
         <Row justify={'center'}>
           <Col>
-            <Button htmlType='submit' size={'large'} loading={loading}>
+            <Button
+              htmlType='submit'
+              size={'large'}
+              loading={loading}
+              onClick={handleOnClick}
+            >
               Iniciar sesión
             </Button>
           </Col>
         </Row>
       </Card>
-    </Form>
+    </section>
   );
 };

@@ -24,6 +24,7 @@ export const useApi = (
   const fetch = async () => {
     try {
       setLoading(true);
+      setError(null);
       const response = await instance.request({
         data: payload,
         signal: controllerRef.current.signal,
